@@ -48,6 +48,5 @@ with mlflow.start_run(run_name="rf-autolog-experiment"):
     plt.savefig(cm_path)
     plt.close()
 
-    # Artefak tambahan (boleh, tidak melanggar autolog)
     mlflow.log_artifact(cm_path)
 
