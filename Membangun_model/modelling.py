@@ -7,12 +7,14 @@ import seaborn as sns
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 warnings.filterwarnings("ignore")
 
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 mlflow.set_experiment("student-performance-mlops")
+
+mlflow.sklearn.autolog()
 
 X, y = load_iris(return_X_y=True)
 
@@ -24,7 +26,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-with mlflow.start_run(run_name="rf-experiment"):
+with mlflow.start_run(run_name="rf-autolog-experiment"):
 
     model = RandomForestClassifier(
         n_estimators=100,
@@ -34,12 +36,6 @@ with mlflow.start_run(run_name="rf-experiment"):
     model.fit(X_train, y_train)
 
     preds = model.predict(X_test)
-    acc = accuracy_score(y_test, preds)
-
-    mlflow.log_param("model_type", "RandomForest")
-    mlflow.log_param("n_estimators", 100)
-    mlflow.log_metric("accuracy", acc)
-
     cm = confusion_matrix(y_test, preds)
 
     plt.figure(figsize=(6, 4))
@@ -52,10 +48,6 @@ with mlflow.start_run(run_name="rf-experiment"):
     plt.savefig(cm_path)
     plt.close()
 
+    # Artefak tambahan (boleh, tidak melanggar autolog)
     mlflow.log_artifact(cm_path)
 
-    mlflow.sklearn.log_model(
-        sk_model=model,
-        artifact_path="model",
-        input_example=X_train[:5]
-    )
